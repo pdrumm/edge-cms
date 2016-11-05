@@ -95,8 +95,7 @@ var edgeCMS = (function() {
   }
 
   function getCurrentDomain () {
-    //return document.domain.replace(/\./g, "~");
-    return "south-bend-code-school~github~io"
+    return document.domain.replace(/\./g, "~");
   }
 
   var loginBtn;
