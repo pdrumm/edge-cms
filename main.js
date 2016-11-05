@@ -32,7 +32,7 @@ var edgeCMS = (function() {
   function watchForUpdates() {
     var domain = getCurrentDomain();
     if (domain != "") {
-      var ref = firebase.database().ref().child(domain);
+      var ref = firebase.database().ref().child("domains").child(domain).child("values");
       var editableElements = document.getElementsByClassName("edge-cms");
       ref.once('value').then(function(snapshot) {
         snapshot.forEach(function(childSnapshot) {
@@ -83,7 +83,7 @@ var edgeCMS = (function() {
 
   function saveClicked() {
     var domain = getCurrentDomain();
-    var ref = firebase.database().ref().child(domain);
+    var ref = firebase.database().ref().child("domains").child(domain).child("values");
     var editableElements = document.getElementsByClassName("edge-cms");
     for (i=0; i < editableElements.length; i++) {
       var keyName = editableElements[i].getAttribute("data-key-name");
