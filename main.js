@@ -59,7 +59,9 @@ var edgeCMS = (function() {
 
   function removeSaveButton() {
     var button = document.getElementById("fixed-pos-button");
-    button.style.display = "none";
+    if(button != undefined) {
+      button.style.display = "none";
+    }
   }
 
   function makeEditable() {
@@ -94,7 +96,7 @@ var edgeCMS = (function() {
     firebase.auth().signOut();
   }
 
-  function getCurrentDomain () {
+  function getCurrentDomain() {
     return document.domain.replace(/\./g, "~");
   }
 
@@ -115,19 +117,38 @@ var edgeCMS = (function() {
     loginModal.style.display = "block";
   }
 
+  function canEditThisPage(user) {
+    var domain = getCurrentDomain();
+    var ref = firebase.database().ref().child("users/" + user.uid + "/domains");
+    return ref.once('value').then(function(snapshot) {
+      if (snapshot.exists()) {
+        return snapshot.hasChild(domain);
+      } else {
+        return false;
+      }
+    });
+  }
+
   function watchAuthState() {
     firebase.auth().onAuthStateChanged(function(user) {
       console.log("Auth state changed");
       if (user) {
-        console.log("User logged in");
-        makeEditable();
-        addSaveButton();
-        document.getElementsByClassName("modal")[0].style.display = "none";
+        canEditThisPage(user).then(function(canEdit) {
+          if(canEdit) {
+            console.log("User logged in");
+            makeEditable();
+            addSaveButton();
+            document.getElementsByClassName("modal")[0].style.display = "none";
+          } else {
+            alert("You do not have the credentials to edit this page");
+            firebase.auth().signOut();
+          }
+        });
       } else {
         // No user is signed in.
         console.log("No user logged in");
-        removeSaveButton();
         makeNotEditable();
+        removeSaveButton();
       }
     });
   }
