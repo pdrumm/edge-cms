@@ -30,20 +30,25 @@ var edgeCMS = (function() {
   }
   
   function watchForUpdates() {
-    var ref = firebase.database().ref().child("test-site");
-    var editableElements = document.getElementsByClassName("edge-cms");
-    ref.once('value').then(function(snapshot) {
-      snapshot.forEach(function(childSnapshot) {
-        for (i=0; i < editableElements.length; i++) {
-          if (editableElements[i].getAttribute("data-key-name") === childSnapshot.key) {
-            editableElements[i].innerHTML = childSnapshot.val();
+    var domain = document.domain.replace(/\./g, "~");
+    if (domain != "") {
+      var ref = firebase.database().ref().child(domain);
+      var editableElements = document.getElementsByClassName("edge-cms");
+      ref.once('value').then(function(snapshot) {
+        snapshot.forEach(function(childSnapshot) {
+          for (i=0; i < editableElements.length; i++) {
+            if (editableElements[i].getAttribute("data-key-name") === childSnapshot.key) {
+              editableElements[i].innerHTML = childSnapshot.val();
+            }
           }
-        }
+        });
       });
-      document.body.style.opacity = 1;
-    });
+    } else {
+      alert("Edge-CMS requires a valid domain name. Loading original HTML Values.");
+    }
+    document.body.style.opacity = 1;
   }
-  
+
   function makeNotEditable() {
     var editableElements = document.getElementsByClassName("edge-cms");
     for (i=0; i < editableElements.length; i++) {
@@ -76,7 +81,8 @@ var edgeCMS = (function() {
   }
   
   function saveClicked() {
-    var ref = firebase.database().ref().child("test-site");
+    var domain = document.domain.replace(/\./g, "~");
+    var ref = firebase.database().ref().child(domain);
     var editableElements = document.getElementsByClassName("edge-cms");
     for (i=0; i < editableElements.length; i++) {
       var keyName = editableElements[i].getAttribute("data-key-name");
