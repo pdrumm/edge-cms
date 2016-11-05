@@ -3,21 +3,21 @@ var edgeCMS = (function() {
 
   function loadScript(url, callback)
   {
-      // Adding the script tag to the head as suggested before
-      var head = document.getElementsByTagName('head')[0];
-      var script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = url;
-  
-      // Then bind the event to the callback function.
-      // There are several events for cross browser compatibility.
-      script.onreadystatechange = callback;
-      script.onload = callback;
-  
-      // Fire the loading
-      head.appendChild(script);
+    // Adding the script tag to the head as suggested before
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = url;
+
+    // Then bind the event to the callback function.
+    // There are several events for cross browser compatibility.
+    script.onreadystatechange = callback;
+    script.onload = callback;
+
+    // Fire the loading
+    head.appendChild(script);
   }
-  
+
   function prepareFirebase() {
     var config = {
       apiKey: "AIzaSyBuWvVLmh4NGzfzsGBKIqmRsR9BtVJF1zE",
@@ -28,9 +28,9 @@ var edgeCMS = (function() {
     };
     firebase.initializeApp(config);
   }
-  
+
   function watchForUpdates() {
-    var domain = document.domain.replace(/\./g, "~");
+    var domain = getCurrentDomain();
     if (domain != "") {
       var ref = firebase.database().ref().child(domain);
       var editableElements = document.getElementsByClassName("edge-cms");
@@ -42,11 +42,12 @@ var edgeCMS = (function() {
             }
           }
         });
+        document.body.style.opacity = 1;
       });
     } else {
       alert("Edge-CMS requires a valid domain name. Loading original HTML Values.");
+      document.body.style.opacity = 1;
     }
-    document.body.style.opacity = 1;
   }
 
   function makeNotEditable() {
@@ -55,19 +56,19 @@ var edgeCMS = (function() {
       editableElements[i].setAttribute("contenteditable", "false");
     }
   }
-  
+
   function removeSaveButton() {
     var button = document.getElementById("fixed-pos-button");
     button.style.display = "none";
   }
-  
+
   function makeEditable() {
     var editableElements = document.getElementsByClassName("edge-cms");
     for (i=0; i < editableElements.length; i++) {
       editableElements[i].setAttribute("contenteditable", "true");
     }
   }
-  
+
   var saveButton;
   function addSaveButton() {
     if (saveButton != undefined) {
@@ -79,9 +80,9 @@ var edgeCMS = (function() {
     saveButton.addEventListener("click", saveClicked);
     document.body.appendChild(saveButton);
   }
-  
+
   function saveClicked() {
-    var domain = document.domain.replace(/\./g, "~");
+    var domain = getCurrentDomain();
     var ref = firebase.database().ref().child(domain);
     var editableElements = document.getElementsByClassName("edge-cms");
     for (i=0; i < editableElements.length; i++) {
@@ -92,7 +93,12 @@ var edgeCMS = (function() {
     }
     firebase.auth().signOut();
   }
-  
+
+  function getCurrentDomain () {
+    //return document.domain.replace(/\./g, "~");
+    return "south-bend-code-school~github~io"
+  }
+
   var loginBtn;
   function addLoginButton() {
     if (loginBtn != undefined) {
@@ -103,13 +109,13 @@ var edgeCMS = (function() {
     loginBtn.addEventListener("click", loginClicked);
     document.body.appendChild(loginBtn);
   }
-  
+
   function loginClicked() {
     var loginModal = createLoginModal();
     document.body.appendChild(loginModal);
     loginModal.style.display = "block";
   }
-  
+
   function watchAuthState() {
     firebase.auth().onAuthStateChanged(function(user) {
       console.log("Auth state changed");
@@ -126,14 +132,14 @@ var edgeCMS = (function() {
       }
     });
   }
-  
+
   function firebaseReady() {
     prepareFirebase();
     watchAuthState();
     watchForUpdates();
     addLoginButton();
   }
-  
+
   var loginForm;
   function createLoginForm() {
     if (loginForm != undefined) {
@@ -145,7 +151,7 @@ var edgeCMS = (function() {
     var passwordLabel = document.createElement("label");
     var passwordInput = document.createElement("input");
     var submitBtn = document.createElement("button");
-  
+
     emailInput.setAttribute("type", "email");
     emailInput.setAttribute("name", "email");
     emailInput.setAttribute("class", "edge-input");
@@ -155,34 +161,33 @@ var edgeCMS = (function() {
     submitBtn.setAttribute("type", "submit");
     emailLabel.setAttribute("for", "email");
     passwordLabel.setAttribute("for", "password");
-  
+
     emailLabel.innerHTML = "Email Address:";
     passwordLabel.innerHTML = "Password:";
     submitBtn.innerHTML = "Submit";
-  
+
     loginForm.appendChild(emailLabel);
     loginForm.appendChild(emailInput);
     loginForm.appendChild(passwordLabel);
     loginForm.appendChild(passwordInput);
     loginForm.appendChild(submitBtn);
-  
+
     loginForm.onsubmit = function() {
       var email = emailInput.value;
       var password = passwordInput.value;
       console.log(email);
       console.log(password);
       firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
-        var errorCode = error.code;
         var errorMessage = error.message;
         console.log(errorMessage);
       });
-  
+
       return false;
     };
-  
+
     return loginForm;
   }
-  
+
   var modalDiv;
   function createLoginModal() {
     if (modalDiv != undefined) {
@@ -193,43 +198,37 @@ var edgeCMS = (function() {
     var closeButton = document.createElement("span");
     var modalHeader = document.createElement("h3");
     var loginForm = createLoginForm();
-    
+
     modalDiv.setAttribute("class", "modal");
     contentDiv.setAttribute("class", "modal-content");
-  
+
     loginForm.style.marginTop = "20px";
-  
+
     closeButton.innerHTML = "x";
     modalHeader.innerHTML = "Enter your login information";
-  
+
     closeButton.addEventListener("click", function() {
       modalDiv.style.display = "none";
     });
-  
+
     window.onclick = function(event) {
       if (event.target == modalDiv) {
         modalDiv.style.display = "none";
       }
-    }
-  
+    };
+
     contentDiv.appendChild(closeButton);
     contentDiv.appendChild(modalHeader);
     contentDiv.appendChild(loginForm);
     modalDiv.appendChild(contentDiv);
-  
+
     return modalDiv;
   }
-  
+
   //window.onload = function () {
   edgeCMS.begin= function () {
-    if (document.readyState === 'complete') {
-      loadScript("https://www.gstatic.com/firebasejs/3.4.1/firebase.js", firebaseReady);
-    } else {
-      window.onload = function () {
-        loadScript("https://www.gstatic.com/firebasejs/3.4.1/firebase.js", firebaseReady);
-      }
-    }
-  }
+    loadScript("https://www.gstatic.com/firebasejs/3.4.1/firebase.js", firebaseReady);
+  };
 
   return edgeCMS;
 }());
