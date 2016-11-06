@@ -134,7 +134,6 @@ var edgeCMS = (function() {
 
   function watchAuthState() {
     firebase.auth().onAuthStateChanged(function(user) {
-      console.log("Auth state changed");
       if (user) {
         canEditThisPage(user).then(function(canEdit) {
           if(canEdit) {
@@ -201,11 +200,8 @@ var edgeCMS = (function() {
     loginForm.onsubmit = function() {
       var email = emailInput.value;
       var password = passwordInput.value;
-      console.log(email);
-      console.log(password);
       firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
-        var errorMessage = error.message;
-        console.log(errorMessage);
+        alert(error.message);
       });
 
       return false;
