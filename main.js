@@ -124,11 +124,21 @@ var edgeCMS = (function() {
     var domain = getCurrentDomain();
     var ref = firebase.database().ref().child("users/" + user.uid + "/domains");
     return ref.once('value').then(function(snapshot) {
+      // check user permissions
       if (snapshot.exists()) {
         return snapshot.hasChild(domain);
       } else {
         return false;
       }
+    }.then(function(userVerified) {
+      if (!userVerified) {
+        return false;
+      }
+      // check if page is still pending
+      var pendingRef = firebase.database().ref().child("domains/" + domain + "/pending");
+      return ref.once('value').then(function(snapshot) {
+        return !snapshot.val()
+      });
     });
   }
 
