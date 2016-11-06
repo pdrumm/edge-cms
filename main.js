@@ -130,7 +130,7 @@ var edgeCMS = (function() {
       } else {
         return false;
       }
-    }.then(function(userVerified) {
+    }).then(function(userVerified) {
       if (!userVerified) {
         return false;
       }
