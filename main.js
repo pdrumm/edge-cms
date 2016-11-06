@@ -3,18 +3,14 @@ var edgeCMS = (function() {
 
   function loadScript(url, callback)
   {
-    // Adding the script tag to the head as suggested before
     var head = document.getElementsByTagName('head')[0];
     var script = document.createElement('script');
     script.type = 'text/javascript';
     script.src = url;
 
-    // Then bind the event to the callback function.
-    // There are several events for cross browser compatibility.
     script.onreadystatechange = callback;
     script.onload = callback;
 
-    // Fire the loading
     head.appendChild(script);
   }
 
@@ -51,9 +47,8 @@ var edgeCMS = (function() {
   }
 
   function makeNotEditable() {
-    var editableElements = document.getElementsByClassName("edge-cms");
-    for (i=0; i < editableElements.length; i++) {
-      editableElements[i].setAttribute("contenteditable", "false");
+    if (editor != undefined) {
+      editor.destroy();
     }
   }
 
@@ -64,23 +59,31 @@ var edgeCMS = (function() {
     }
   }
 
+  var editor;
   function makeEditable() {
-    var editableElements = document.getElementsByClassName("edge-cms");
-    for (i=0; i < editableElements.length; i++) {
-      editableElements[i].setAttribute("contenteditable", "true");
+    if (editor === undefined) {
+      var editableElements = document.getElementsByClassName("edge-cms");
+      editor = new MediumEditor(editableElements, {
+        toolbar: {
+          buttons: ['bold', 'italic', 'underline', 'anchor']
+        }
+      });
+    } else {
+      editor.setup();
     }
   }
 
   var saveButton;
   function addSaveButton() {
     if (saveButton != undefined) {
-      saveButton.style.display = "fixed";
+      saveButton.style.display = "initial";
+    } else {
+      saveButton = document.createElement("button");
+      saveButton.setAttribute("id", "fixed-pos-button");
+      saveButton.innerHTML = "Save";
+      saveButton.addEventListener("click", saveClicked);
+      document.body.appendChild(saveButton);
     }
-    saveButton = document.createElement("button");
-    saveButton.setAttribute("id", "fixed-pos-button");
-    saveButton.innerHTML = "Save";
-    saveButton.addEventListener("click", saveClicked);
-    document.body.appendChild(saveButton);
   }
 
   function saveClicked() {
@@ -138,7 +141,10 @@ var edgeCMS = (function() {
             console.log("User logged in");
             makeEditable();
             addSaveButton();
-            document.getElementsByClassName("modal")[0].style.display = "none";
+            var modal = document.getElementsByClassName("modal")[0];
+            if (modal != undefined) {
+              document.getElementsByClassName("modal")[0].style.display = "none";
+            }
           } else {
             alert("You do not have the credentials to edit this page");
             firebase.auth().signOut();
@@ -232,7 +238,7 @@ var edgeCMS = (function() {
     });
 
     window.onclick = function(event) {
-      if (event.target == modalDiv) {
+      if (event.target === modalDiv) {
         modalDiv.style.display = "none";
       }
     };
@@ -245,10 +251,24 @@ var edgeCMS = (function() {
     return modalDiv;
   }
 
-  //window.onload = function () {
   edgeCMS.begin= function () {
-    loadScript("https://www.gstatic.com/firebasejs/3.4.1/firebase.js", firebaseReady);
+    // add medium editor css and js files
+    addStyleSheet("https://cdnjs.cloudflare.com/ajax/libs/medium-editor/5.22.1/css/medium-editor.css");
+    addStyleSheet("https://cdnjs.cloudflare.com/ajax/libs/medium-editor/5.22.1/css/themes/flat.min.css");
+    loadScript("https://cdnjs.cloudflare.com/ajax/libs/medium-editor/5.22.1/js/medium-editor.js", function() {
+      // Add firebase
+      loadScript("https://www.gstatic.com/firebasejs/3.4.1/firebase.js", firebaseReady);
+    });
   };
+
+  function addStyleSheet(url) {
+    var head  = document.getElementsByTagName('head')[0];
+    var link  = document.createElement('link');
+    link.rel  = 'stylesheet';
+    link.type = 'text/css';
+    link.href = url;
+    head.appendChild(link);
+  }
 
   return edgeCMS;
 }());
