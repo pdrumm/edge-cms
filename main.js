@@ -139,7 +139,7 @@ var edgeCMS = (function() {
     return ref.once('value').then(function(snapshot) {
       // check if result exists and is false, so the page is not pending
       return snapshot.exists() && !snapshot.val();
-    );
+    });
   }
 
   function watchAuthState() {
