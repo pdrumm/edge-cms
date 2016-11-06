@@ -130,30 +130,37 @@ var edgeCMS = (function() {
       } else {
         return false;
       }
-    }).then(function(userVerified) {
-      if (!userVerified) {
-        return false;
-      }
-      // check if page is still pending
-      var pendingRef = firebase.database().ref().child("domains/" + domain + "/pending");
-      return ref.once('value').then(function(snapshot) {
-        return !snapshot.val()
-      });
     });
+  }
+
+  function pageIsActive() {
+    var domain = getCurrentDomain();
+    var ref = firebase.database().ref().child("domains/" + domain + "/pending");
+    return ref.once('value').then(function(snapshot) {
+      // check if result exists and is false, so the page is not pending
+      return snapshot.exists() && !snapshot.val();
+    );
   }
 
   function watchAuthState() {
     firebase.auth().onAuthStateChanged(function(user) {
       if (user) {
+        console.log("User logged in");
         canEditThisPage(user).then(function(canEdit) {
           if(canEdit) {
-            console.log("User logged in");
-            makeEditable();
-            addSaveButton();
-            var modal = document.getElementsByClassName("modal")[0];
-            if (modal != undefined) {
-              document.getElementsByClassName("modal")[0].style.display = "none";
-            }
+            pageIsActive().then(function(isActive) {
+              if (isActive) {
+                makeEditable();
+                addSaveButton();
+                var modal = document.getElementsByClassName("modal")[0];
+                if (modal != undefined) {
+                  document.getElementsByClassName("modal")[0].style.display = "none";
+                }
+              } else {
+                alert("You have not verified owning this site yet");
+                firebase.auth().signOut();
+              }
+            });
           } else {
             alert("You do not have the credentials to edit this page");
             firebase.auth().signOut();
