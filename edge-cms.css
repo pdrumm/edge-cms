@@ -58,3 +58,7 @@ body {
   margin-bottom: 15px;
   display: block;
 }
+.medium-editor-toolbar li button {
+  background-color: #2196f3 !important;
+  border-right: 1px solid #90caf9 !important;
+}
